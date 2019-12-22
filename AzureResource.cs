@@ -51,7 +51,7 @@ namespace Hollan.Function
             {
                 _log.LogInformation($"⚰️ the bell tolls for death of {ResourceId}");
                 var response = await _client.DeleteAsync($"https://management.azure.com{ResourceId}?api-version=2019-08-01");
-                _log.LogInformation($"Grim Reaper got response {response.StatusCode} with reason {response.ReasonPhrase}.");
+                _log.LogInformation($"Grim Reaper got response {response.StatusCode} with content {await response.Content.ReadAsStringAsync()}.");
                 Entity.Current.SignalEntity(new EntityId(nameof(SMSConversation), "default"), nameof(SMSConversation.RemoveResource), ResourceId);
                 _log.LogInformation($"☠️ the deed is done.");
                 Entity.Current.DeleteState();

@@ -79,7 +79,8 @@ namespace Hollan.Function
         public void RemoveResource(string resourceId)
         {
             int index = resourceMap.IndexOf(resourceId);
-            resourceMap[index] = null;
+            if(index >= 0)
+                resourceMap[index] = null;
         }
 
         [FunctionName(nameof(SMSConversation))]
