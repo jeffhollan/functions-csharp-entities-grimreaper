@@ -19,6 +19,9 @@ namespace Hollan.Function
         private readonly string toPhoneNumber = Environment.GetEnvironmentVariable("TwilioTo");
         [JsonProperty]
         public List<string> resourceMap = new List<string>();
+        
+        [JsonProperty]
+        public Dictionary<int, string> entityMap = new Dictionary<int, string>();
         public SMSConversation(ILogger log, IAsyncCollector<CreateMessageOptions> twilioBinding)
         {
             this.log = log;
@@ -33,16 +36,28 @@ namespace Hollan.Function
                     Body = message
                 }
             );
+            await twilioBinding.FlushAsync();
         }
 
-        public void ReceiveMessage(string message)
+        public async Task ReceiveExtendMessage((string, string, string) commandTuple)
         {
+            string entityKey = entityMap[int.Parse(commandTuple.Item2)];
+            string resourceId = resourceMap[int.Parse(commandTuple.Item2)];
+            string resourceGroupName = StringParsers.ParseResourceGroupName(resourceId);
 
+            Entity.Current.SignalEntity(
+                new EntityId(nameof(AzureResource), entityKey),
+                nameof(AzureResource.ExtendScheduledDeath),
+                int.Parse(commandTuple.Item3)
+            );
+
+            await SendMessage($"Extending death of {resourceGroupName} by {commandTuple.Item3} days 😇");
         }
 
         public async Task AddResource(dynamic input)
         {
             string resourceId = input["ResourceId"];
+            string entityKey = input["EntityKey"];
             DateTime scheduledDeath = input["ScheduledDeath"];
             DateTimeOffset localTimeDeath = scheduledDeath.AddHours(-8);
             string resourceGroupName = StringParsers.ParseResourceGroupName(resourceId);
@@ -65,15 +80,23 @@ namespace Hollan.Function
 
             int currentIndex = resourceMap.IndexOf(resourceId);
 
+            if(entityMap.ContainsKey(currentIndex))
+                entityMap.Remove(currentIndex);
+
+            entityMap.Add(currentIndex, entityKey);
+
             await SendMessage(
                 $"Created resource {resourceGroupName}. Set to expire at {localTimeDeath.DateTime.ToShortDateString()} {localTimeDeath.DateTime.ToShortTimeString()}. To extend, reply 'Extend {currentIndex} <num-of-days>'"
             );
+        }
 
-            Entity.Current.SignalEntity(
-                Entity.Current.EntityId,
-                scheduledDeath.AddSeconds(-5),
-                nameof(this.SendMessage),
-                $"Resource {resourceGroupName} is going to expire in 1 hour. To extend, reply 'Extend {currentIndex} <num-of-days>'");
+        public async Task WarnMessage(string resourceId)
+        {
+            int index = resourceMap.IndexOf(resourceId);
+            string resourceGroupName = StringParsers.ParseResourceGroupName(resourceId);
+            await SendMessage(
+                $"Death approaches for {resourceGroupName}.  To extend, reply 'Extend {index} <num-of-days>'"
+            );
         }
 
         public void RemoveResource(string resourceId)

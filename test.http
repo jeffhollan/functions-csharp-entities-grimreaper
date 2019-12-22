@@ -28,4 +28,10 @@ aeg-event-type: Notification
 GET http://localhost:7071/runtime/webhooks/durabletask/entities/smsconversation/default
 
 ### Get resource
-GET http://localhost:7071/runtime/webhooks/durabletask/entities/azureresource/test1
+GET http://localhost:7071/runtime/webhooks/durabletask/entities/azureresource/67948585-079c-46d8-badc-c212daa1503c
+
+### Test twilio message
+POST http://localhost:7071/api/TwilioTrigger
+Content-Type: application/x-www-form-urlencoded
+
+ToCountry=US&ToState=WA&SmsMessageSid=SM6d0dd4280e5eef79exxxxx&NumMedia=0&ToCity=REDMOND&FromZip=12345&SmsSid=SM6d0dd4280e5eef79exxxxx&FromState=WA&SmsStatus=received&FromCity=SEATTLE&Body=Extend+0+3&FromCountry=US&To=%2B11234568858&ToZip=98052&NumSegments=1&MessageSid=SM6d0dd4280e5eef79exxxxx&AccountSid=AC22684fe26088ae45510ff603de38e33f&From=%2B1123456789&ApiVersion=2010-04-01

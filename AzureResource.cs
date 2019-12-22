@@ -31,13 +31,14 @@ namespace Hollan.Function
         {
             this.ResourceId = ResourceId;
             _log.LogInformation($"Adding grim watcher for {ResourceId}");
-            ScheduledDeath = DateTime.UtcNow.AddMinutes(1);
+            ScheduledDeath = DateTime.UtcNow.AddDays(1);
             Entity.Current.SignalEntity(
                 new EntityId(nameof(SMSConversation), "default"), nameof(SMSConversation.AddResource),
                 new
                 {
                     ResourceId,
-                    ScheduledDeath
+                    ScheduledDeath,
+                    EntityKey = Entity.Current.EntityKey
                 }
             );
 
@@ -58,17 +59,38 @@ namespace Hollan.Function
             }
         }
 
-        public void UpdateScheduledDeath(DateTime updatedScheduledDeath)
+        public void WarnDeleteResource()
         {
-            ScheduledDeath = updatedScheduledDeath;
+            // Check to see if scheduled death got extended
+            if (DateTime.UtcNow > ScheduledDeath.AddMinutes(-70))
+            {
+                Entity.Current.SignalEntity(
+                    new EntityId(nameof(SMSConversation), "default"), 
+                    nameof(SMSConversation.WarnMessage),
+                    ResourceId
+                );
+            }
+        }
+
+        public void ExtendScheduledDeath(int numOfDays)
+        {
+            ScheduledDeath = ScheduledDeath.AddDays(numOfDays);
             BookAppointmentWithReaper();
         }
 
         private void BookAppointmentWithReaper()
         {
+            // Setup a warning 1 hour before the reaper visits
             Entity.Current.SignalEntity(
                 Entity.Current.EntityId,
-                ScheduledDeath.AddSeconds(30),
+                ScheduledDeath.AddMinutes(-60),
+                nameof(this.WarnDeleteResource),
+                null);
+
+            // For whom death tolls 🔔
+            Entity.Current.SignalEntity(
+                Entity.Current.EntityId,
+                ScheduledDeath.AddMinutes(5),
                 nameof(this.DeleteResource),
                 null
             );
