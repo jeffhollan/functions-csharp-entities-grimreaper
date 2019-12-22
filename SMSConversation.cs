@@ -44,6 +44,9 @@ namespace Hollan.Function
         {
             string resourceId = input["ResourceId"];
             DateTime scheduledDeath = input["ScheduledDeath"];
+            DateTimeOffset localTimeDeath = scheduledDeath.AddHours(-8);
+            string resourceGroupName = StringParsers.ParseResourceGroupName(resourceId);
+
             if (resourceMap.Contains(resourceId))
                 throw new InvalidOperationException("Cannot add a resource that already exists");
 
@@ -63,14 +66,14 @@ namespace Hollan.Function
             int currentIndex = resourceMap.IndexOf(resourceId);
 
             await SendMessage(
-                $"Created resource {resourceId}. Set to expire at {scheduledDeath.ToShortDateString()} {scheduledDeath.ToShortTimeString()}. To extend, reply 'Extend {currentIndex} <num-of-days>'"
+                $"Created resource {resourceGroupName}. Set to expire at {localTimeDeath.DateTime.ToShortDateString()} {localTimeDeath.DateTime.ToShortTimeString()}. To extend, reply 'Extend {currentIndex} <num-of-days>'"
             );
 
             Entity.Current.SignalEntity(
                 Entity.Current.EntityId,
                 scheduledDeath.AddSeconds(-5),
                 nameof(this.SendMessage),
-                $"Resource {resourceId} is going to expire in 1 hour. To extend, reply 'Extend {currentIndex} <num-of-days>'");
+                $"Resource {resourceGroupName} is going to expire in 1 hour. To extend, reply 'Extend {currentIndex} <num-of-days>'");
         }
 
         public void RemoveResource(string resourceId)

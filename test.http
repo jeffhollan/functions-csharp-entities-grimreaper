@@ -1,10 +1,11 @@
 ### Add resource
 POST http://localhost:7071/runtime/webhooks/EventGrid?functionName=EventGridTrigger
 Content-Type: application/json
+aeg-event-type: Notification
 
 [
     {
-        "subject": "/subscriptions/411a9cd0-xxxx-xxxx-xxxx-cc1ea96a3933/resourceGroups/this-is-a-test",
+        "subject": "/subscriptions/411a9cd0-f057-4ae5-8def-cc1ea96a3933/resourceGroups/forrester-python-2",
         "eventType": "Microsoft.Resources.ResourceWriteSuccess",
         "eventTime": "2019-12-22T05:11:29.2976486Z",
         "id": "67948585-079c-46d8-badc-c212daa1503c",

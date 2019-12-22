@@ -18,6 +18,15 @@ namespace Hollan.Function
             ILogger log)
         {
             log.LogInformation($"Received notification of create for resource group {eventGridEvent.Subject}");
+
+            string resourceGroupName = StringParsers.ParseResourceGroupName(eventGridEvent.Subject);
+
+            if(resourceGroupName.StartsWith("a-") || resourceGroupName.StartsWith("d-"))
+            {
+                log.LogInformation($"Ignoring resource group {resourceGroupName} for reserved characters");
+                return;
+            }
+
             await client.SignalEntityAsync(
                 new EntityId(nameof(AzureResource), eventGridEvent.Id),
                 nameof(AzureResource.CreateResource),

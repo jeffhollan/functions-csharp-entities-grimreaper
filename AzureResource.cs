@@ -50,7 +50,8 @@ namespace Hollan.Function
             if (DateTime.UtcNow > ScheduledDeath)
             {
                 _log.LogInformation($"⚰️ the bell tolls for death of {ResourceId}");
-                await _client.DeleteAsync($"https://management.azure.com{ResourceId}?api-version=2019-08-01");
+                var response = await _client.DeleteAsync($"https://management.azure.com{ResourceId}?api-version=2019-08-01");
+                _log.LogInformation($"Grim Reaper got response {response.StatusCode} with reason {response.ReasonPhrase}.");
                 Entity.Current.SignalEntity(new EntityId(nameof(SMSConversation), "default"), nameof(SMSConversation.RemoveResource), ResourceId);
                 _log.LogInformation($"☠️ the deed is done.");
                 Entity.Current.DeleteState();
