@@ -12,14 +12,7 @@ namespace Hollan.Function
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.Services.AddSingleton(sp =>
-            {
-                var client = new HttpClient();
-                var azureServiceTokenProvider = new AzureServiceTokenProvider();
-                string accessToken = azureServiceTokenProvider.GetAccessTokenAsync("https://management.core.windows.net").Result;
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                return client;
-            });
+            builder.Services.AddHttpClient();
         }
     }
 }

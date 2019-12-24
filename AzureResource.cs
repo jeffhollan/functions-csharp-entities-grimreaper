@@ -5,6 +5,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Net.Http;
+using Microsoft.Azure.Services.AppAuthentication;
+using System.Net.Http.Headers;
 
 namespace Hollan.Function
 {
@@ -15,10 +17,10 @@ namespace Hollan.Function
         private readonly ILogger _log;
         private readonly HttpClient _client;
 
-        public AzureResource(ILogger log, HttpClient client)
+        public AzureResource(ILogger log, IHttpClientFactory factory)
         {
             _log = log;
-            _client = client;
+            _client = factory.CreateClient();
         }
 
         [JsonProperty("value")]
@@ -38,7 +40,7 @@ namespace Hollan.Function
                 {
                     ResourceId,
                     ScheduledDeath,
-                    EntityKey = Entity.Current.EntityKey
+                    Entity.Current.EntityKey
                 }
             );
 
@@ -51,10 +53,21 @@ namespace Hollan.Function
             if (DateTime.UtcNow > ScheduledDeath)
             {
                 _log.LogInformation($"⚰️ the bell tolls for death of {ResourceId}");
+                // Get ARM token
+                var azureServiceTokenProvider = new AzureServiceTokenProvider();
+                string accessToken = azureServiceTokenProvider.GetAccessTokenAsync("https://management.core.windows.net").Result;
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                // DELETE Azure Resource
                 var response = await _client.DeleteAsync($"https://management.azure.com{ResourceId}?api-version=2019-08-01");
+
                 _log.LogInformation($"Grim Reaper got response {response.StatusCode} with content {await response.Content.ReadAsStringAsync()}.");
+
+                // Remove this entity from the SMS history
                 Entity.Current.SignalEntity(new EntityId(nameof(SMSConversation), "default"), nameof(SMSConversation.RemoveResource), ResourceId);
+
                 _log.LogInformation($"☠️ the deed is done.");
+
+                // Remove this entity
                 Entity.Current.DeleteState();
             }
         }
