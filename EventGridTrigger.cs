@@ -21,7 +21,7 @@ namespace Hollan.Function
 
             string resourceGroupName = StringParsers.ParseResourceGroupName(eventGridEvent.Subject);
 
-            if(resourceGroupName.StartsWith("a-") || resourceGroupName.StartsWith("d-"))
+            if(resourceGroupName.StartsWith("a-") || resourceGroupName.StartsWith("d-") || resourceGroupName.StartsWith("MC_"))
             {
                 log.LogInformation($"Ignoring resource group {resourceGroupName} for reserved characters");
                 return;
