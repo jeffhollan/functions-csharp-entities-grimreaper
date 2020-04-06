@@ -59,7 +59,7 @@ namespace Hollan.Function
             string resourceId = input["ResourceId"];
             string entityKey = input["EntityKey"];
             DateTime scheduledDeath = input["ScheduledDeath"];
-            DateTimeOffset localTimeDeath = scheduledDeath.AddHours(-8);
+            DateTimeOffset localTimeDeath = scheduledDeath.AddHours(-7);
             string resourceGroupName = StringParsers.ParseResourceGroupName(resourceId);
 
             if (resourceMap.Contains(resourceId))
@@ -99,11 +99,15 @@ namespace Hollan.Function
             );
         }
 
-        public void RemoveResource(string resourceId)
+        public async Task RemoveResource(string resourceId)
         {
             int index = resourceMap.IndexOf(resourceId);
+            string resourceGroupName = StringParsers.ParseResourceGroupName(resourceId);
             if(index >= 0)
                 resourceMap[index] = null;
+            await SendMessage(
+                $"🔔 The bell tolls for {resourceGroupName} ⚰️"
+            );
         }
 
         [FunctionName(nameof(SMSConversation))]
