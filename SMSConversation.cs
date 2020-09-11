@@ -101,13 +101,38 @@ namespace Hollan.Function
 
         public async Task RemoveResource(string resourceId)
         {
-            int index = resourceMap.IndexOf(resourceId);
+            // Remove from SMS shortcodes
+            RemoveResourceFromMap(resourceId);
             string resourceGroupName = StringParsers.ParseResourceGroupName(resourceId);
-            if(index >= 0)
-                resourceMap[index] = null;
             await SendMessage(
                 $"🔔 The bell tolls for {resourceGroupName} ⚰️"
             );
+        }
+
+        private void RemoveResourceFromMap(string resourceId)
+        {
+            int index = resourceMap.IndexOf(resourceId);
+            if(index >= 0)
+                resourceMap[index] = null;
+        }
+
+        public async Task UntrackResource((string, string, string) commandTuple)
+        {
+            string entityKey = entityMap[int.Parse(commandTuple.Item2)];
+            string resourceId = resourceMap[int.Parse(commandTuple.Item2)];
+            string resourceGroupName = StringParsers.ParseResourceGroupName(resourceId);
+
+            // Remove the stateful entity
+            Entity.Current.SignalEntity(
+                new EntityId(nameof(AzureResource), entityKey),
+                nameof(AzureResource.Delete),
+                null
+            );
+
+            // Remove from SMS shortcodes
+            RemoveResourceFromMap(resourceId);
+
+            await SendMessage($"{resourceGroupName} has been granted immunity 💎");
         }
 
         [FunctionName(nameof(SMSConversation))]

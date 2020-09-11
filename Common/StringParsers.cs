@@ -17,8 +17,9 @@ public class StringParsers
         if(matches.Count < 1)
             throw new ArgumentException("Found no matches for parsing command.");
         
-        if(matches[0].Groups.Count < 3)
-            throw new ArgumentException("Didn't find the right number of parameters for command");
+        // some commands only have 1 argument
+        if(matches[0].Groups.Count == 2)
+            return (matches[0].Groups[1].Value.ToLower(), matches[0].Groups[2].Value, null);
 
         return (matches[0].Groups[1].Value.ToLower(), matches[0].Groups[2].Value, matches[0].Groups[3].Value);
     }

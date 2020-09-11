@@ -35,6 +35,13 @@ namespace Hollan.Function
                         commandTuple
                     );
                     break;
+                case "untrack":
+                    await client.SignalEntityAsync(
+                        new EntityId(nameof(SMSConversation), "default"),
+                        nameof(SMSConversation.UntrackResource),
+                        commandTuple
+                    );
+                    break;
                 default:
                     break;
             }
