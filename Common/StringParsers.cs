@@ -12,7 +12,7 @@ public class StringParsers
 
     public static (string, string, string) ParseCommand(string command)
     {
-        Regex rx = new Regex(@"(\w*?) (\d*?) (\d*)$", RegexOptions.IgnoreCase);
+        Regex rx = new Regex(@"(\w*) (\d*) ?(\d*)?$", RegexOptions.IgnoreCase);
         MatchCollection matches = rx.Matches(command);
         if(matches.Count < 1)
             throw new ArgumentException("Found no matches for parsing command.");
