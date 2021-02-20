@@ -28,7 +28,7 @@ namespace Hollan.Function
             }
 
             await client.SignalEntityAsync(
-                new EntityId(nameof(AzureResource), eventGridEvent.Id),
+                new EntityId(nameof(AzureResource), eventGridEvent.Subject.Replace("/", "")),
                 nameof(AzureResource.CreateResource),
                 eventGridEvent.Subject
             );

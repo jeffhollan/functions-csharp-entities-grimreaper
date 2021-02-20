@@ -4,6 +4,20 @@
         "durableTask": {
             "storageProvider": {
                 "useLegacyPartitionManagement": false
+            },
+            "tracing": {
+                "distributedTracingEnabled": false,
+                "distributedTracingProtocol": "W3CTraceContext"
+            }
+        }
+    },
+    "logging": {
+        "applicationInsights": {
+            "samplingSettings": {
+                "isEnabled": false
+            },
+            "httpAutoCollectionOptions": {
+                "enableW3CDistributedTracing": true
             }
         }
     }

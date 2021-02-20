@@ -17,34 +17,45 @@ namespace Hollan.Function
         private readonly ILogger _log;
         private readonly HttpClient _client;
 
-        public AzureResource(ILogger log, IHttpClientFactory factory)
-        {
-            _log = log;
-            _client = factory.CreateClient();
-        }
-
         [JsonProperty("value")]
         public DateTime ScheduledDeath { get; set; }
 
         [JsonProperty]
         public string ResourceId { get; set; }
 
+        [JsonProperty]
+        public bool HasSignaled = false;
+
+        public AzureResource(ILogger log, IHttpClientFactory factory)
+        {
+            _log = log;
+            _client = factory.CreateClient();
+            ScheduledDeath = DateTime.UtcNow.AddDays(1);
+
+        }
         public void CreateResource(string ResourceId)
         {
+            _log.LogInformation($"Create signaled grim watcher for {ResourceId}");
             this.ResourceId = ResourceId;
-            _log.LogInformation($"Adding grim watcher for {ResourceId}");
-            ScheduledDeath = DateTime.UtcNow.AddDays(1);
-            Entity.Current.SignalEntity(
-                new EntityId(nameof(SMSConversation), "default"), nameof(SMSConversation.AddResource),
-                new
-                {
-                    ResourceId,
-                    ScheduledDeath,
-                    Entity.Current.EntityKey
-                }
-            );
+            if(!HasSignaled)
+            {
+                Entity.Current.SignalEntity(
+                    new EntityId(nameof(SMSConversation), "default"), nameof(SMSConversation.AddResource),
+                    new
+                    {
+                        ResourceId,
+                        ScheduledDeath,
+                        Entity.Current.EntityKey
+                    }
+                );
 
-            BookAppointmentWithReaper();
+                BookAppointmentWithReaper();
+                HasSignaled = true;
+            }
+            else
+            {
+                _log.LogInformation("Have already signaled this resource ID and booked appointment");
+            }
         }
 
         public async Task DeleteResource()

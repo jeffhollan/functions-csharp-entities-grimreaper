@@ -28,7 +28,7 @@ aeg-event-type: Notification
 GET http://localhost:7071/runtime/webhooks/durabletask/entities/smsconversation/default
 
 ### Get resource
-GET http://localhost:7071/runtime/webhooks/durabletask/entities/azureresource/67948585-079c-46d8-badc-c212daa1503c
+GET http://localhost:7071/runtime/webhooks/durabletask/entities/azureresource/subscriptions411a9cd0-f057-4ae5-8def-cc1ea96a3933resourceGroupsforrester-python-2
 
 ### Test twilio message
 POST http://localhost:7071/api/TwilioTrigger
